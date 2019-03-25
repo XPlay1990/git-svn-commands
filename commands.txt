@@ -1,0 +1,42 @@
+git svn clone --stdlayout --authors-file=authors.txt svn-url
+
+git remote add origin https://janAdamczyk:pw@bitbucket.org/company/project.git
+
+####tags
+git for-each-ref --format="%(refname:short) %(objectname)" refs/remotes/origin/tags \
+| while read BRANCH REF
+  do
+        TAG_NAME=${BRANCH#*/}
+        BODY="$(git log -1 --format=format:%B $REF)"
+
+        echo "ref=$REF parent=$(git rev-parse $REF^) tagname=$TAG_NAME body=$BODY" >&2
+
+        git tag -a -m "$BODY" $TAG_NAME $REF^  &&\
+        git branch -r -d $BRANCH
+  done
+
+###branches
+for b in $(git for-each-ref --format='%(refname:short)' refs/remotes); do git branch $b refs/remotes/$b && git branch -D -r $b; done
+
+###remove branches@version
+for p in $(git for-each-ref --format='%(refname:short)' | grep @); do git branch -D $p; done
+###remove tag@version
+for p in $(git for-each-ref --format='%(refname:short)' | grep @); do git tag -d $p; done
+
+##remove trunk
+git branch -d origin/trunk
+
+git push --all
+git push --tags
+
+
+#####################################################################################
+### If already remote:
+
+###remote delete branch
+for p in $(git for-each-ref --format='%(refname:short)' | grep @ | cut -d / -f 2-); do git push origin --delete $p; done
+###remote delete tags
+for p in $(git for-each-ref --format='%(refname:short)' | grep @); do git push origin :refs/tags/$p; done
+
+
+######################################################################################
