@@ -40,3 +40,30 @@ for p in $(git for-each-ref --format='%(refname:short)' | grep @); do git push o
 
 
 ######################################################################################
+
+
+#######################################################
+### RENAMING BRANCHES ###################
+#checkout all branches locally
+for i in `git branch -a | grep remote | grep -v HEAD | grep -v master`; do git branch --track ${i#remotes/origin/} $i; done
+
+
+
+# check before rename branches
+git branch | grep "origin/" | awk '{original=$1; sub("origin/",""); print original, "->" , $1}'
+
+#rename branches
+git branch | grep "origin/" | awk '{original=$1; sub("origin/",""); print original, $1}' | xargs -n 2 git branch -m
+
+#show all branches
+git branch -a
+
+# save password in project
+git config credential.helper store
+
+#delete remote branches
+for p in $((git for-each-ref --format='%(refname:short)' | grep 'origin/origin') | cut -d / -f 2-); do git push origin --delete $p; done
+
+#push local branches
+git push --all
+###################################################################################
