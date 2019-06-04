@@ -47,6 +47,9 @@ for p in $(git for-each-ref --format='%(refname:short)' | grep @); do git push o
 #checkout all branches locally
 for i in `git branch -a | grep remote | grep -v HEAD | grep -v master`; do git branch --track ${i#remotes/origin/} $i; done
 
+#eventuell backup erstellen
+cp -r ../repositoryName ../backupName
+
 # check before rename branches
 git branch | grep "origin/" | awk '{original=$1; sub("origin/",""); print original, "->" , $1}'
 
@@ -68,3 +71,8 @@ for p in $((git for-each-ref --format='%(refname:short)' | grep 'origin/origin')
 #push local branches
 git push --all
 ###################################################################################
+
+
+to update the local List of remote branches:
+
+git remote update origin --prune
